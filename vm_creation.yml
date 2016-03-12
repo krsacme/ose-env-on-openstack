@@ -6,7 +6,6 @@
     - name : rhel_subs_user
       prompt: Enter Red Hat Subscription User Name
       private: no
-      default: skramaja1@redhat.com
     - name: rhel_subs_pass
       prompt: Enter Red Hat Subscription Password
       private: yes
