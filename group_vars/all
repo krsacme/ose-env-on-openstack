@@ -1,0 +1,25 @@
+
+named_cloud: os1
+
+ose_master_count: 3
+ose_node_count: 4
+ose_lb_count: 1
+ose_etcd_count: 0
+etcd_in_master: true
+
+node_start_name: "skramaja-ose"
+ose_master_name: "master"
+ose_node_name: "node"
+ose_etcd_name: "etcd"
+ose_lb_name: "lb"
+ose_dns_name: "dns"
+
+ose_cluster_domain: "cloud.com"
+
+image_name: "_OS1_rhel-guest-image-7.2-20151102.0.x86_64.qcow2"
+user_name: "cloud-user"
+key_name: "skramaja-laptop3"
+flavor_name: "m3.large"
+security_groups: "all_open"
+
+rhel_subs_pool: 8a85f9874011071c01407da00b997cb2

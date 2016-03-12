@@ -1,0 +1,12 @@
+strict-order
+domain-needed
+local=/example.com/
+bind-dynamic
+resolv-file=/etc/resolv.conf.upstream
+{% if 'masters' in groups %}
+{% for host in groups['masters'] %}
+address=/.cloudapps.example.com/{{ hostvars[host]['floating_ip'] }}
+{% endfor %}
+{% endif %}
+
+log-queries

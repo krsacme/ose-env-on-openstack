@@ -1,0 +1,5 @@
+{% if 'dns' in groups %}
+{% for host in groups['dns'] %}
+nameserver {{ hostvars[host]['fixed_ip'] }}
+{% endfor %}
+{% endif %}

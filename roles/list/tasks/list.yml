@@ -1,0 +1,48 @@
+---
+- set_fact: host_file_path="{{ playbook_dir }}/hosts"
+- name: "create hosts file"
+  template: src=hosts.j2 dest="{{ host_file_path }}"
+
+- name: "gather master vm facts"
+  os_server_facts:
+    cloud: "{{ named_cloud }}"
+    server: "{{ node_start_name }}-{{ ose_master_name }}*"
+
+- name: "add master vms details to [masters] section"
+  include: list-info.yml node_type=masters host_file_path="{{ host_file_path }}"
+  with_items:
+  - "{{ openstack_servers }}"
+
+- name: "add master vms details to [nodes] section"
+  include: list-info.yml node_type=nodes host_file_path="{{ host_file_path }}"
+  with_items:
+  - "{{ openstack_servers }}"
+
+
+- name: "gather node vm facts"
+  os_server_facts:
+    cloud: "{{ named_cloud }}"
+    server: "{{ node_start_name }}-{{ ose_node_name }}*"
+
+- include: list-info.yml node_type=nodes host_file_path="{{ host_file_path }}"
+  with_items:
+  - "{{ openstack_servers }}"
+
+- name: "gather lb vm facts"
+  os_server_facts:
+    cloud: "{{ named_cloud }}"
+    server: "{{ node_start_name }}-{{ ose_lb_name }}*"
+
+- include: list-info.yml node_type=lb host_file_path="{{ host_file_path }}"
+  with_items:
+  - "{{ openstack_servers }}"
+
+- name: "gather dns vm facts"
+  os_server_facts:
+    cloud: "{{ named_cloud }}"
+    server: "{{ node_start_name }}-{{ ose_dns_name }}*"
+
+- include: list-info.yml node_type=dns host_file_path="{{ host_file_path }}"
+  with_items:
+  - "{{ openstack_servers }}"
+

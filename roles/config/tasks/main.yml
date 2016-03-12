@@ -1,0 +1,31 @@
+---
+- name: "set pipelining as True"
+  ini_file: dest=/etc/ansible/ansible.cfg section=ssh_connection option=pipelining value=True
+
+- name: "set ssh_args as for ControlMaster=autho and ControlPersist=600s"
+  ini_file: dest=/etc/ansible/ansible.cfg section=ssh_connection option=ssh_args value="-o ControlMaster=auto -o ControlPersist=600s"
+
+- name: "set control_path"
+  ini_file: dest=/etc/ansible/ansible.cfg section=ssh_connection option=control_path value="%(directory)s/%%h-%%r"
+
+- name: "set ansible configuration gathering to implicit"
+  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=gathering value=implicit
+
+- name: "set ansible configuration fact_caching_connection to /tmp/ansible/facts"
+  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=fact_caching_connection value=/tmp/ansible/facts
+
+- name: "set ansible configuration fact_caching to jsonfile"
+  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=fact_caching value=jsonfile
+
+- name: "set ansible configuration fact_caching_timeout to 600"
+  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=fact_caching_timeout value=600
+
+- name: "set ansible configuration forks to 10"
+  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=forks value=10
+
+- name: "set ansible configuration timeout to 15"
+  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=timeout value=15
+
+- name: "set ansible configuration host_key_checking to false"
+  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=host_key_checking value=False
+

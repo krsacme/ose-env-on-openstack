@@ -1,0 +1,57 @@
+---
+- name: enable redhat subscription
+  redhat_subscription: state=present username={{ rhel_subs_user }} password={{ rhel_subs_pass }}
+
+- name: update subscription pool and repos required for openshift
+  command: "{{ item }}"
+  with_items:
+    - subscription-manager remove --all
+    - subscription-manager attach --pool={{ rhel_subs_pool_int }}
+    - subscription-manager repos --disable="*"
+    - subscription-manager repos
+        --enable="rhel-7-server-rpms"
+        --enable="rhel-7-server-extras-rpms"
+        --enable="rhel-7-server-ose-3.1-rpms"
+        --enable="rhel-ha-for-rhel-7-server-rpms"
+
+- name: yum update all
+  yum: name=* state=latest
+
+- name: install repos
+  yum: name={{ item }} state=latest
+  with_items:
+    - wget
+    - git
+    - net-tools
+    - bind-utils
+    - iptables-services
+    - bridge-utils
+    - bash-completion
+    - atomic-openshift-utils
+    - docker
+
+- name: update hostname
+  hostname: name={{ inventory_hostname }}
+
+- name: "remove cloud.cfg update_hostname entry"
+  lineinfile: dest=/etc/cloud/cloud.cfg state=absent regexp=".*update_hostname"
+
+- name: "add preserve_hostname to cloud.cfg"
+  lineinfile: dest=/etc/cloud/cloud.cfg state=present line="preserve_hostname{{ ':' }} true"
+
+- name: "update resolv.conf with local dns server"
+  template: src=resolv.conf.j2 dest=/etc/resolv.conf
+
+- name: set PEERNDS to no
+  lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth0 regexp="^PEERDNS=\"yes\"" line="PEERDNS=\"no\"" state=present
+
+- name: "install openshift"
+  yum: name=atomic-openshift-utils state=present
+
+- name: add docker insecure registry for 0.0.0.0:0
+  lineinfile: dest=/etc/sysconfig/docker regexp='^OPTIONS=.*--insecure-registry.*' state=present line="OPTIONS='--insecure-registry 0.0.0.0:0 --selinux-enabled '"
+
+- name: "enable docker service"
+  service: name=docker state=restarted enabled=yes
+  ignore_errors: yes
+

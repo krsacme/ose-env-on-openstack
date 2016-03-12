@@ -1,0 +1,102 @@
+---
+- name: "collecting information for rhel subscription"
+  hosts: localhost
+  gather_facts: false
+  vars_prompt:
+    - name : rhel_subs_user
+      prompt: Enter Red Hat Subscription User Name
+      private: no
+      default: skramaja1@redhat.com
+    - name: rhel_subs_pass
+      prompt: Enter Red Hat Subscription Password
+      private: yes
+  tasks:
+    - set_fact: rhel_subs_user="{{rhel_subs_user}}"
+    - set_fact: rhel_subs_pass="{{rhel_subs_pass}}"
+
+- name: "creating required vms and preparing hosts file"
+  hosts: localhost
+  roles:
+    - create
+    - list
+
+# Note: below hosts are added dynamically on the role 'list'
+- name: "setup local dns service"
+  hosts: dns
+  user: cloud-user
+  become: yes
+  vars:
+    - rhel_subs_user: "{{ hostvars['localhost']['rhel_subs_user']}}"
+    - rhel_subs_pass: "{{ hostvars['localhost']['rhel_subs_pass']}}"
+    - rhel_subs_pool_int: "{{ rhel_subs_pool }}"
+  roles:
+    - dns
+
+- name: "master specific setups - keys and cfg"
+  hosts: masters
+  user: cloud-user
+  gather_facts: false
+  tasks:
+    - name: "remove the id_rsa file"
+      file: path="/home/cloud-user/.ssh/id_rsa" state=absent
+
+    - name: "remove the id_rsa.pub file"
+      file: path=/home/cloud-user/.ssh/id_rsa.pub state=absent
+
+    - name: "generate ssh key in first master"
+      shell: echo -e  'y\n'| ssh-keygen -f /home/cloud-user/.ssh/id_rsa -t rsa -N ''
+
+    - name: "get the public key"
+      shell: cat /home/cloud-user/.ssh/id_rsa.pub
+      register: pub_key_reg
+
+    - name: "set fact on the host"
+      set_fact: pub_key="{{ pub_key_reg.stdout }}"
+
+- name: "authorize master1 key to all nodes"
+  hosts: masters:nodes:lb:etcd
+  user: cloud-user
+  gather_facts: false
+  tasks:
+    - name: "first master's host name"
+      set_fact: host_name="{{ ose_master_name }}1.{{ ose_cluster_domain }}"
+
+    - name: "update the keys to all nodes"
+      authorized_key: user=cloud-user key="{{ hostvars[host_name]['pub_key'] }}"
+
+- name: "copy hosts file"
+  hosts: masters
+  user: cloud-user
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: "copy hosts file"
+      copy: src=hosts dest=/etc/ansible/hosts
+
+- name: "prepare the nodes for installation"
+  hosts: masters:nodes:lb:etcd
+  gather_facts: false
+  user: cloud-user
+  become: yes
+  vars:
+    - rhel_subs_user: "{{ hostvars['localhost']['rhel_subs_user']}}"
+    - rhel_subs_pass: "{{ hostvars['localhost']['rhel_subs_pass']}}"
+    - rhel_subs_pool_int: "{{ rhel_subs_pool }}"
+  roles:
+    - config
+    - prepare
+
+- name: restart machine
+  hosts: masters:nodes:lb:etcd
+  gather_facts: false
+  user: cloud-user
+  become: yes
+  tasks:
+    - name: "stop and disable NetworkManager Service"
+      service: name=NetworkManager state=stopped enabled=no
+
+    - name: "restart"
+      command: shutdown -r now "Ansible updates triggered"
+      async: 0
+      poll: 0
+      ignore_errors: true
