@@ -1,8 +1,4 @@
 ---
-- name: "debug message"
-  debug: msg={{ item }}
-  with_sequence: count={{ ose_master_count }} format={{ node_start_name }}-{{ ose_master_name}}%d
-
 - name: "creating ose etcd vms"
   when: etcd_in_master == false
   os_server:

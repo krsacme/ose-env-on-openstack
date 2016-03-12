@@ -9,9 +9,13 @@
     - name: rhel_subs_pass
       prompt: Enter Red Hat Subscription Password
       private: yes
+    - name: rhel_subs_pool
+      prompt: Enter Red Hat Subscription Pool ID
+      private: no
   tasks:
     - set_fact: rhel_subs_user="{{rhel_subs_user}}"
     - set_fact: rhel_subs_pass="{{rhel_subs_pass}}"
+    - set_fact: rhel_subs_pool="{{rhel_subs_pool}}"
 
 - name: "creating required vms and preparing hosts file"
   hosts: localhost
@@ -27,7 +31,7 @@
   vars:
     - rhel_subs_user: "{{ hostvars['localhost']['rhel_subs_user']}}"
     - rhel_subs_pass: "{{ hostvars['localhost']['rhel_subs_pass']}}"
-    - rhel_subs_pool_int: "{{ rhel_subs_pool }}"
+    - rhel_subs_pool_int: "{{ hostvars['localhost']['rhel_subs_pool']}}"
   roles:
     - dns
 
@@ -80,7 +84,7 @@
   vars:
     - rhel_subs_user: "{{ hostvars['localhost']['rhel_subs_user']}}"
     - rhel_subs_pass: "{{ hostvars['localhost']['rhel_subs_pass']}}"
-    - rhel_subs_pool_int: "{{ rhel_subs_pool }}"
+    - rhel_subs_pool_int: "{{ hostvars['localhost']['rhel_subs_pool']}}"
   roles:
     - config
     - prepare

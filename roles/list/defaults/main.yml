@@ -1,5 +1,0 @@
-
-ansible_ssh_user: cloud-user
-ansible_sudo: true
-cluster_hostname: cluster.cloud.com
-cluster_public_hostname: cluster.cloud.com

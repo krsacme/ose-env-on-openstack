@@ -1,6 +1,7 @@
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
+# TODO: Masters IP should be public - need to verify if etcd works with this change
 {## All masters are part of the nodes ##}
 {% if 'nodes' in groups %}
 {% for host in groups['nodes'] %}

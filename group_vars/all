@@ -22,4 +22,7 @@ key_name: "skramaja-laptop3"
 flavor_name: "m3.large"
 security_groups: "all_open"
 
-rhel_subs_pool: 8a85f9874011071c01407da00b997cb2
+ansible_ssh_user: cloud-user
+ansible_sudo: true
+cluster_hostname: cluster.cloud.com
+cluster_public_hostname: cluster.cloud.com
