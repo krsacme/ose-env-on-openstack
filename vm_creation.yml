@@ -60,7 +60,7 @@
   hosts: masters:nodes:lb:etcd
   user: cloud-user
   gather_facts: false
-  tasks:
+  pre_tasks:
     - name: "first master's host name"
       set_fact: host_name="{{ ose_master_name }}1.{{ ose_cluster_domain }}"
 
@@ -80,7 +80,6 @@
     - prepare
     - config
 
-
 - name: "copy hosts file"
   hosts: masters
   user: cloud-user
@@ -89,6 +88,23 @@
   tasks:
     - name: "copy hosts file"
       copy: src=hosts dest=/etc/ansible/hosts
+
+- name: "setup localhost for continuing OpenShift installation"
+  hosts: localhost
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: "remove if any old masters in the hosts file"
+      lineinfile: dest="/etc/hosts" regexp=".*{{ hostvars[item]['inventory_hostname'] }}.*" state=absent
+      with_items:
+        - "{{ groups.masters }}"
+        - "{{ groups.lb }}"
+
+    - name: "add masters to hosts file"
+      lineinfile: dest="/etc/hosts" line="{{ hostvars[item]['floating_ip'] }} {{ hostvars[item]['inventory_hostname'] }}"
+      with_items:
+        - "{{ groups.masters }}"
+        - "{{ groups.lb }}"
 
 - name: restart machine
   hosts: masters:nodes:lb:etcd
@@ -100,7 +116,7 @@
       service: name=NetworkManager state=stopped enabled=no
 
     - name: "restart"
-      command: shutdown -r now "Ansible updates triggered"
+      command: shutdown -r now "Ansible triggered"
       async: 0
       poll: 0
       ignore_errors: true
