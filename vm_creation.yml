@@ -67,15 +67,6 @@
     - name: "update the keys to all nodes"
       authorized_key: user=cloud-user key="{{ hostvars[host_name]['pub_key'] }}"
 
-- name: "copy hosts file"
-  hosts: masters
-  user: cloud-user
-  become: yes
-  gather_facts: false
-  tasks:
-    - name: "copy hosts file"
-      copy: src=hosts dest=/etc/ansible/hosts
-
 - name: "prepare the nodes for installation"
   hosts: masters:nodes:lb:etcd
   gather_facts: false
@@ -86,8 +77,18 @@
     - rhel_subs_pass: "{{ hostvars['localhost']['rhel_subs_pass']}}"
     - rhel_subs_pool_int: "{{ hostvars['localhost']['rhel_subs_pool']}}"
   roles:
-    - config
     - prepare
+    - config
+
+
+- name: "copy hosts file"
+  hosts: masters
+  user: cloud-user
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: "copy hosts file"
+      copy: src=hosts dest=/etc/ansible/hosts
 
 - name: restart machine
   hosts: masters:nodes:lb:etcd
