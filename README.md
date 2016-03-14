@@ -4,6 +4,7 @@
 
 Ansible based OpenShift Environment preparation on the OpenStack platform with following steps:
 - Create the required VMs
+- Setup the local DNS server via dnsmasq
 - Create the hosts file required for the OpenShift installation
 - Prepare the host environment with packages and configurations
 
