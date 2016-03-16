@@ -2,7 +2,7 @@
 named_cloud: os1
 
 ose_master_count: 3
-ose_node_count: 4
+ose_node_count: 2
 ose_lb_count: 1
 ose_etcd_count: 0
 etcd_in_master: true

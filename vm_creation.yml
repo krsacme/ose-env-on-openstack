@@ -29,9 +29,9 @@
   user: cloud-user
   become: yes
   vars:
-    - rhel_subs_user: "{{ hostvars['localhost']['rhel_subs_user']}}"
-    - rhel_subs_pass: "{{ hostvars['localhost']['rhel_subs_pass']}}"
-    - rhel_subs_pool_int: "{{ hostvars['localhost']['rhel_subs_pool']}}"
+    - rhel_subs_user: "{{ hostvars['localhost']['rhel_subs_user'] }}"
+    - rhel_subs_pass: "{{ hostvars['localhost']['rhel_subs_pass'] }}"
+    - rhel_subs_pool_int: "{{ hostvars['localhost']['rhel_subs_pool'] }}"
   roles:
     - dns
 
@@ -80,43 +80,8 @@
     - prepare
     - config
 
-- name: "copy hosts file"
-  hosts: masters
-  user: cloud-user
-  become: yes
-  gather_facts: false
-  tasks:
-    - name: "copy hosts file"
-      copy: src=hosts dest=/etc/ansible/hosts
+- include: includes/copy_hosts.yml
 
-- name: "setup localhost for continuing OpenShift installation"
-  hosts: localhost
-  gather_facts: false
-  become: yes
-  tasks:
-    - name: "remove if any old masters in the hosts file"
-      lineinfile: dest="/etc/hosts" regexp=".*{{ hostvars[item]['inventory_hostname'] }}.*" state=absent
-      with_items:
-        - "{{ groups.masters }}"
-        - "{{ groups.lb }}"
+- include: includes/post_local_config.yml
 
-    - name: "add masters to hosts file"
-      lineinfile: dest="/etc/hosts" line="{{ hostvars[item]['floating_ip'] }} {{ hostvars[item]['inventory_hostname'] }}"
-      with_items:
-        - "{{ groups.masters }}"
-        - "{{ groups.lb }}"
-
-- name: restart machine
-  hosts: masters:nodes:lb:etcd
-  gather_facts: false
-  user: cloud-user
-  become: yes
-  tasks:
-    - name: "stop and disable NetworkManager Service"
-      service: name=NetworkManager state=stopped enabled=no
-
-    - name: "restart"
-      command: shutdown -r now "Ansible triggered"
-      async: 0
-      poll: 0
-      ignore_errors: true
+- include: includes/restart_hosts.yml

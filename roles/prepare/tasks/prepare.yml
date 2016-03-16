@@ -45,6 +45,9 @@
 - name: set PEERNDS to no
   lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth0 regexp="^PEERDNS=\"yes\"" line="PEERDNS=\"no\"" state=present
 
+- name: set SELinux to permissive
+  lineinfile: dest=/etc/sysconfig/selinux regexp="^SELINUX=.*" line="SELINUX=permissive"
+
 - name: "install openshift"
   yum: name=atomic-openshift-utils state=present
 
@@ -52,6 +55,6 @@
   lineinfile: dest=/etc/sysconfig/docker regexp='^OPTIONS=.*--insecure-registry.*' state=present line="OPTIONS='--insecure-registry 0.0.0.0:0 --selinux-enabled '"
 
 - name: "enable docker service"
-  service: name=docker state=restarted enabled=yes
+  service: name=docker enabled=yes
   ignore_errors: yes
 
