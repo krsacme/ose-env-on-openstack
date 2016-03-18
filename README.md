@@ -12,6 +12,11 @@ Ansible based OpenShift Environment preparation on the OpenStack platform with f
 
 
 ####Usage:
+
+General configurable parameters are exposed at *group_vars/all* file.
+The playbooks uses the named cloud parameter configured via [OpenStack Config](http://docs.openstack.org/developer/python-openstackclient/configuration.html). The parameter **named_cloud** is used to give the targetted OpenStack cloud configuration.
+
+
 Create the environement:
 ```
 ansible-playbook vm_creation.yml
