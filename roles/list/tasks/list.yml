@@ -11,13 +11,18 @@
 - name: "add master vms details to [masters] section"
   include: list-info.yml node_type=masters host_file_path="{{ host_file_path }}"
   with_items:
-  - "{{ openstack_servers }}"
+    - "{{ openstack_servers }}"
 
 - name: "add master vms details to [nodes] section"
   include: list-info.yml node_type=nodes host_file_path="{{ host_file_path }}"
   with_items:
-  - "{{ openstack_servers }}"
+    - "{{ openstack_servers }}"
 
+- name: "add master vms details to [etcd] section"
+  include: list-info.yml node_type=etcd host_file_path="{{ host_file_path }}"
+  with_items:
+    - "{{ openstack_servers }}"
+  when: etcd_in_master
 
 - name: "gather node vm facts"
   os_server_facts:
@@ -26,7 +31,7 @@
 
 - include: list-info.yml node_type=nodes host_file_path="{{ host_file_path }}"
   with_items:
-  - "{{ openstack_servers }}"
+    - "{{ openstack_servers }}"
 
 - name: "gather lb vm facts"
   os_server_facts:
@@ -44,5 +49,15 @@
 
 - include: list-info.yml node_type=dns host_file_path="{{ host_file_path }}"
   with_items:
-  - "{{ openstack_servers }}"
+    - "{{ openstack_servers }}"
 
+- name: "gather etcd vm facts"
+  os_server_facts:
+    cloud: "{{ named_cloud }}"
+    server: "{{ node_start_name }}-{{ ose_etcd_name }}*"
+
+- name: "add etcd vms details to [etcd] section"
+  include: list-info.yml node_type=etcd host_file_path="{{ host_file_path }}"
+  with_items:
+    - "{{ openstack_servers }}"
+  when: not etcd_in_master

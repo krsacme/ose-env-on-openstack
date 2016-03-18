@@ -1,5 +1,5 @@
 ---
-- name: "collecting information for rhel subscription"
+- name: "Create require VMs on Openstack"
   hosts: localhost
   gather_facts: false
   vars_prompt:
@@ -16,15 +16,12 @@
     - set_fact: rhel_subs_user="{{rhel_subs_user}}"
     - set_fact: rhel_subs_pass="{{rhel_subs_pass}}"
     - set_fact: rhel_subs_pool="{{rhel_subs_pool}}"
-
-- name: "creating required vms and preparing hosts file"
-  hosts: localhost
   roles:
     - create
     - list
 
 # Note: below hosts are added dynamically on the role 'list'
-- name: "setup local dns service"
+- name: "Setup local dns service"
   hosts: dns
   user: cloud-user
   become: yes
@@ -35,7 +32,7 @@
   roles:
     - dns
 
-- name: "master specific setups - keys and cfg"
+- name: "Prepare master as the installer with key setup"
   hosts: masters
   user: cloud-user
   gather_facts: false
@@ -56,26 +53,23 @@
     - name: "set fact on the host"
       set_fact: pub_key="{{ pub_key_reg.stdout }}"
 
-- name: "authorize master1 key to all nodes"
+- name: "Prepare all the nodes environemnt"
   hosts: masters:nodes:lb:etcd
-  user: cloud-user
-  gather_facts: false
-  pre_tasks:
-    - name: "first master's host name"
-      set_fact: host_name="{{ ose_master_name }}1.{{ ose_cluster_domain }}"
-
-    - name: "update the keys to all nodes"
-      authorized_key: user=cloud-user key="{{ hostvars[host_name]['pub_key'] }}"
-
-- name: "prepare the nodes for installation"
-  hosts: masters:nodes:lb:etcd
-  gather_facts: false
   user: cloud-user
   become: yes
+  gather_facts: false
   vars:
     - rhel_subs_user: "{{ hostvars['localhost']['rhel_subs_user']}}"
     - rhel_subs_pass: "{{ hostvars['localhost']['rhel_subs_pass']}}"
     - rhel_subs_pool_int: "{{ hostvars['localhost']['rhel_subs_pool']}}"
+  pre_tasks:
+    - name: "first master's host name"
+      set_fact: host_name="{{ ose_master_name }}1.{{ ose_cluster_domain }}"
+      become: false
+
+    - name: "update the keys to all nodes"
+      authorized_key: user=cloud-user key="{{ hostvars[host_name]['pub_key'] }}"
+      become: false
   roles:
     - prepare
     - config

@@ -15,7 +15,7 @@ deployment_type=openshift-enterprise
 
 # Uncomment the following to enable htpasswd authentication; defaults to
 # DenyAllPasswordIdentityProvider.
-#openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/htpasswd'}]
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/htpasswd'}]
 
 # Native high availbility cluster method with optional load balancer.
 # If no lb group is defined installer assumes that a load balancer has
@@ -24,8 +24,8 @@ deployment_type=openshift-enterprise
 # or to one or all of the masters defined in the inventory if no load
 # balancer is present.
 openshift_master_cluster_method=native
-openshift_master_cluster_hostname={{ cluster_hostname }}
-openshift_master_cluster_public_hostname={{ cluster_public_hostname}}
+openshift_master_cluster_hostname={{ ose_lb_name }}.{{ ose_cluster_domain }}
+openshift_master_cluster_public_hostname={{ ose_lb_name }}.{{ ose_cluster_domain }}
 
 # override the default controller lease ttl
 #osm_controller_lease_ttl=30

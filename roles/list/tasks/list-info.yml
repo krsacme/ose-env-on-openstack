@@ -33,11 +33,11 @@
   lineinfile: dest={{ host_file_path }} state=present insertafter=^\[{{ node_type }}\]
     line="{{ node_name }} openshift_hostname={{ node_name }} openshift_public_hostname={{ node_name }} openshift_public_ip={{ floating_ip }}"
 
-# Note: Adding a dummy zzz to etcd because incase of etcd in master, master and etcd will section will have same content which lineinfile will not duplicate
+# Note: Adding a 'tt' to etcd because incase of etcd in master, master and etcd will section will have same content which lineinfile will not duplicate
 - name: "add master entry to hosts file for [etcd] section"
   when: node_type == "etcd"
   lineinfile: dest={{ host_file_path }} state=present insertafter=^\[{{ node_type }}\]
-    line="{{ node_name }} openshift_hostname={{ node_name }} openshift_public_hostname={{ node_name }} zzz=1"
+    line="{{ node_name }} openshift_hostname={{ node_name }} openshift_public_hostname={{ node_name }} tt=1"
 
 - name: "add master entry to hosts file for [nodes] section"
   when: node_type == "nodes" and server['name'].find(ose_master_name) != -1
@@ -49,6 +49,6 @@
   lineinfile: dest={{ host_file_path }} state=present insertafter=^\[{{ node_type }}\]
     line="{{ node_name }} openshift_hostname={{ node_name }} openshift_public_hostname={{ node_name }} openshift_public_ip={{ floating_ip }} openshift_node_labels=\"{'region'{{':'}} 'primary', 'zone'{{':'}} 'none'}\" "
 
-- name: "adding the host dynamically"
+- name: "adding the host dynamically to the ansible host list"
   add_host: hostname="{{ node_name }}" groups="{{ node_type }}" ansible_user="{{ user_name }}" ansible_host="{{ floating_ip }}" fixed_ip="{{ fixed_ip }}" floating_ip="{{ floating_ip }}"
 
