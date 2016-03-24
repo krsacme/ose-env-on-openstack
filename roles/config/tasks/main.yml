@@ -1,22 +1,3 @@
 ---
-- name: "set ansible configuration gathering to implicit"
-  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=gathering value=implicit
-
-- name: "set ansible configuration fact_caching_connection to /tmp/ansible/facts"
-  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=fact_caching_connection value=/tmp/ansible/facts
-
-- name: "set ansible configuration fact_caching to jsonfile"
-  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=fact_caching value=jsonfile
-
-- name: "set ansible configuration fact_caching_timeout to 600"
-  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=fact_caching_timeout value=600
-
-- name: "set ansible configuration forks to 10"
-  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=forks value=10
-
-- name: "set ansible configuration timeout to 45"
-  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=timeout value=45
-
-- name: "set ansible configuration host_key_checking to false"
-  ini_file: dest=/etc/ansible/ansible.cfg section=defaults option=host_key_checking value=False
-
+- include: config.yml
+  when: not l_is_atomic_host

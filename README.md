@@ -10,6 +10,9 @@ Ansible based OpenShift Environment preparation on the OpenStack platform with f
 - Prepare the host environment with packages and configurations
 - Create master1 as the installer and setup ssh with other nodes
 
+Supported Images:
+- Cloud Server Image
+- Atomic Host Image
 
 ####Usage:
 

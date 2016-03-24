@@ -1,4 +1,12 @@
 ---
+- name: "Verify Ansible Version to be greater than or equal to 2.0"
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - fail:
+        msg: "Unsupported ansible version: {{ ansible_version }} found"
+      when: ansible_version.full | version_compare('2.0', 'lt')
+
 - name: "Create require VMs on Openstack"
   hosts: localhost
   gather_facts: false
@@ -21,6 +29,21 @@
     - list
 
 # Note: below hosts are added dynamically on the role 'list'
+- name: "Prepare master as the installer with key setup"
+  hosts: masters:nodes:etcd:dns
+  user: cloud-user
+  gather_facts: false
+  tasks:
+    - name: "Detecting Operating System"
+      shell: ls /run/ostree-booted
+      ignore_errors: true
+      failed_when: false
+      changed_when: false
+      register: ostree_output
+
+    - set_fact:
+        l_is_atomic_host: "{{ ostree_output.rc == 0 }}"
+
 - name: "Setup local dns service"
   hosts: dns
   user: cloud-user
@@ -39,19 +62,24 @@
   tasks:
     - name: "remove the id_rsa file"
       file: path="/home/cloud-user/.ssh/id_rsa" state=absent
+      when: not l_is_atomic_host
 
     - name: "remove the id_rsa.pub file"
       file: path=/home/cloud-user/.ssh/id_rsa.pub state=absent
+      when: not l_is_atomic_host
 
     - name: "generate ssh key in first master"
       shell: echo -e  'y\n'| ssh-keygen -f /home/cloud-user/.ssh/id_rsa -t rsa -N ''
+      when: not l_is_atomic_host
 
     - name: "get the public key"
       shell: cat /home/cloud-user/.ssh/id_rsa.pub
       register: pub_key_reg
+      when: not l_is_atomic_host
 
     - name: "set fact on the host"
       set_fact: pub_key="{{ pub_key_reg.stdout }}"
+      when: not l_is_atomic_host
 
 - name: "Prepare all the nodes environemnt"
   hosts: masters:nodes:lb:etcd
@@ -66,15 +94,18 @@
     - name: "first master's host name"
       set_fact: host_name="{{ ose_master_name }}1.{{ ose_cluster_domain }}"
       become: false
+      when: not l_is_atomic_host
 
     - name: "update the keys to all nodes"
       authorized_key: user=cloud-user key="{{ hostvars[host_name]['pub_key'] }}"
       become: false
+      when: not l_is_atomic_host
   roles:
     - prepare
     - config
 
 - include: includes/copy_hosts.yml
+  when: not l_is_atomic_host
 
 - include: includes/post_local_config.yml
 

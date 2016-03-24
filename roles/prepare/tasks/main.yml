@@ -1,2 +1,8 @@
 ---
+- include: common.yml
+
 - include: prepare.yml
+  when: not l_is_atomic_host
+
+- include: atomic-prepare.yml
+  when: l_is_atomic_host

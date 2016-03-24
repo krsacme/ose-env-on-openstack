@@ -42,13 +42,14 @@
     key_name: "{{ key_name }}"
     flavor: "{{ flavor_name }}"
     security_groups: "{{ security_groups }}"
+  when: ose_master_count > 1
 
 - name: "creating ose dns vms"
   os_server:
     cloud: "{{ named_cloud }}"
     name: "{{ node_start_name }}-{{ ose_dns_name}}"
     state: present
-    image: "{{ image_name }}"
+    image: "{{ dns_image_name }}"
     key_name: "{{ key_name }}"
     flavor: "{{ flavor_name }}"
     security_groups: "{{ security_groups }}"

@@ -1,0 +1,27 @@
+---
+- name: "enable network service"
+  service: name=network enabled=yes
+
+- name: "disable Network Manager"
+  service: name=NetworkManager enabled=no
+
+#- name: "update hostname"
+#  hostname: name={{ inventory_hostname }}
+
+- name: "update hostname (temp)"
+  command: hostnamectl set-hostname {{ inventory_hostname }}
+
+- name: "remove cloud.cfg update_hostname entry"
+  lineinfile: dest=/etc/cloud/cloud.cfg state=absent regexp=".*update_hostname"
+
+- name: "add preserve_hostname to cloud.cfg"
+  lineinfile: dest=/etc/cloud/cloud.cfg state=present line="preserve_hostname{{ ':' }} true"
+
+- name: "update resolv.conf with local dns server"
+  template: src=resolv.conf.j2 dest=/etc/resolv.conf
+
+- name: "set PEERNDS to no"
+  lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth0 regexp="^PEERDNS=.*" line="PEERDNS=\"no\"" state=present
+
+- name: "upgrade the atomic host"
+  command: atomic host upgrade
