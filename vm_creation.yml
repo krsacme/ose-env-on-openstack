@@ -60,14 +60,13 @@
   user: cloud-user
   gather_facts: false
   tasks:
-    - name: "remove the id_rsa file"
-      file: path="/home/cloud-user/.ssh/id_rsa" state=absent
+    - name: "remove the ssh key files"
+      file: path="{{ item }}" state=absent
       when: not l_is_atomic_host
-
-    - name: "remove the id_rsa.pub file"
-      file: path=/home/cloud-user/.ssh/id_rsa.pub state=absent
-      when: not l_is_atomic_host
-
+      with_items:
+        - /home/cloud-user/.ssh/id_rsa
+        - /home/cloud-user/.ssh/id_rsa.pub
+  
     - name: "generate ssh key in first master"
       shell: echo -e  'y\n'| ssh-keygen -f /home/cloud-user/.ssh/id_rsa -t rsa -N ''
       when: not l_is_atomic_host

@@ -5,6 +5,8 @@
 - name: "disable Network Manager"
   service: name=NetworkManager enabled=no
 
+# Current version of hostname does not use hostnamectl command, which is mandatory on atomic host platform
+# It has been fixed in the latest
 #- name: "update hostname"
 #  hostname: name={{ inventory_hostname }}
 
@@ -24,4 +26,4 @@
   lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth0 regexp="^PEERDNS=.*" line="PEERDNS=\"no\"" state=present
 
 - name: "upgrade the atomic host"
-  command: atomic host upgrade
+  atomic_host: state=upgrade
