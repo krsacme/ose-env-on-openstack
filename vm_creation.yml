@@ -30,7 +30,7 @@
 
 # Note: below hosts are added dynamically on the role 'list'
 - name: "Prepare master as the installer with key setup"
-  hosts: masters:nodes:etcd:dns
+  hosts: masters:nodes:etcd:dns:lb
   user: cloud-user
   gather_facts: false
   tasks:
@@ -66,7 +66,7 @@
       with_items:
         - /home/cloud-user/.ssh/id_rsa
         - /home/cloud-user/.ssh/id_rsa.pub
-  
+
     - name: "generate ssh key in first master"
       shell: echo -e  'y\n'| ssh-keygen -f /home/cloud-user/.ssh/id_rsa -t rsa -N ''
       when: not l_is_atomic_host
