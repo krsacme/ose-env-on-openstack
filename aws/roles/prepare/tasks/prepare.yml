@@ -1,0 +1,34 @@
+---
+- name: yum update all
+  yum: name=* state=latest
+
+- name: install repos
+  yum: name={{ item }} state=latest
+  with_items:
+    - wget
+    - git
+    - net-tools
+    - bind-utils
+    - iptables-services
+    - bridge-utils
+    - bash-completion
+    - atomic-openshift-utils
+    - docker
+
+- command: "{{ item }}"
+  with_items:
+    - yum downgrade -y docker docker-selinux
+    - yum remove -y docker-forward-journald
+    - yum update -y --exclude="docker-1.9* docker-selinux-1.9*"
+    - sed -i  '/\[main\]/a exclude=docker-1.9* docker-selinux-1.9*' /etc/yum.conf
+
+- name: update hostname
+  hostname: name={{ inventory_hostname }}
+
+- name: set SELinux to permissive
+  lineinfile: dest=/etc/sysconfig/selinux regexp="^SELINUX=.*" line="SELINUX=permissive"
+
+- name: "enable docker service"
+  service: name=docker enabled=yes
+  ignore_errors: yes
+

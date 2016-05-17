@@ -1,0 +1,15 @@
+---
+- name: restart machine
+  hosts: masters:nodes:lb:etcd
+  gather_facts: false
+  user: cloud-user
+  become: yes
+  tasks:
+    - name: "stop and disable NetworkManager Service"
+      service: name=NetworkManager state=stopped enabled=no
+
+    - name: "restart"
+      command: shutdown -r now "Ansible triggered"
+      async: 0
+      poll: 0
+      ignore_errors: true

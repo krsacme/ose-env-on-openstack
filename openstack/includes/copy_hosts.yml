@@ -1,0 +1,10 @@
+---
+- name: "copy hosts file"
+  hosts: masters
+  user: cloud-user
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: "copy hosts file"
+      copy: src="{{ playbook_dir }}/../hosts" dest=/etc/ansible/hosts
+

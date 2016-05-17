@@ -1,0 +1,9 @@
+---
+- include: launch_master.yml
+  when: aws_master_count > 0
+
+- include: launch_node.yml
+  when: aws_node_count > 0
+
+- include: launch_lab.yml
+  when: aws_lab_count > 0

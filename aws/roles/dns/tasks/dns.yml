@@ -1,0 +1,12 @@
+---
+- name: "copy the resolv.conf for dnsmasq usage"
+  copy: src=/etc/resolv.conf dest=/etc/resolv.conf.upstream remote_src=true
+
+- name: "creating dnsmasq configuration file"
+  template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
+
+- name: "add hosts to /etc/hosts file"
+  template: src=hosts.j2 dest=/etc/hosts
+
+- name: "restart and enable dnsmasq service"
+  service: name=dnsmasq state=restarted enabled=yes

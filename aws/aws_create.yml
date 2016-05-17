@@ -1,0 +1,61 @@
+---
+- name: "Verify Ansible Version to be greater than or equal to 2.0"
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - fail:
+        msg: "Unsupported ansible version: {{ ansible_version }} found"
+      when: ansible_version.full | version_compare('2.0', 'lt')
+
+- name: "Create require VMs on Openstack"
+  hosts: localhost
+  gather_facts: false
+  vars_prompt:
+    - name : rhel_subs_user
+      prompt: Enter Red Hat Subscription User Name
+      private: no
+    - name: rhel_subs_pass
+      prompt: Enter Red Hat Subscription Password
+      private: yes
+    - name: rhel_subs_pool
+      prompt: Enter Red Hat Subscription Pool ID
+      private: no
+  tasks:
+    - set_fact: rhel_subs_user="{{rhel_subs_user}}"
+    - set_fact: rhel_subs_pass="{{rhel_subs_pass}}"
+    - set_fact: rhel_subs_pool="{{rhel_subs_pool}}"
+
+- name: "AWS Setup"
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - aws_secgroup
+    - aws_launch
+
+- name: "DNS Server Setup"
+  hosts: labs
+  gather_facts: false
+  user: ec2-user
+  become: yes
+  roles:
+    - dns
+
+- hosts: masters:nodes
+  gather_facts: false
+  user: ec2-user
+  become: yes
+  vars:
+    - rhel_subs_user: "{{ hostvars['localhost']['rhel_subs_user'] }}"
+    - rhel_subs_pass: "{{ hostvars['localhost']['rhel_subs_pass'] }}"
+    - rhel_subs_pool_int: "{{ hostvars['localhost']['rhel_subs_pool'] }}"
+  roles:
+    - prepare
+
+- hosts: masters
+  gather_facts: false
+  become: yes
+  tasks:
+    - copy: src=skramaja.pem dest=/home/ec2-user/.ssh/ mode='u=r'
+    - copy: src=hosts dest=/etc/ansible/
+
+- include: includes/post_local_config.yml

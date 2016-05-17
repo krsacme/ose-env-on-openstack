@@ -1,0 +1,94 @@
+{
+  "kind": "List",
+  "apiVersion": "v1",
+  "metadata": {},
+  "items": [
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "node-web2",
+        "namespace": "node-web",
+        "selfLink": "/oapi/v1/namespaces/node-web/deploymentconfigs/node-web2",
+        "uid": "9b7bf4e3-8cce-11e5-a3eb-005056bf6787",
+        "resourceVersion": "47905",
+        "creationTimestamp": "2015-11-17T01:57:50Z",
+        "labels": {
+          "app": "node-web2"
+        },
+        "annotations": {
+          "openshift.io/generated-by": "OpenShiftNewApp"
+        }
+      },
+      "spec": {
+        "strategy": {
+          "type": "Rolling",
+          "rollingParams": {
+            "updatePeriodSeconds": 1,
+            "intervalSeconds": 1,
+            "timeoutSeconds": 600,
+            "maxUnavailable": "25%",
+            "maxSurge": "25%"
+          },
+          "resources": {}
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "app": "node-web2",
+          "deploymentconfig": "node-web2"
+        },
+        "template": {
+          "metadata": {
+            "creationTimestamp": null,
+            "labels": {
+              "app": "node-web2",
+              "deploymentconfig": "node-web2"
+            },
+            "annotations": {
+              "openshift.io/generated-by": "OpenShiftNewApp"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "node-web",
+                "image": "krsacme2/node-web-app-demo",
+                "ports": [
+                  {
+                    "containerPort": 8080,
+                    "protocol": "TCP"
+                  }
+                ],
+                "resources": {},
+                "terminationMessagePath": "/dev/termination-log",
+                "imagePullPolicy": "Always",
+                "securityContext" : {
+                  "privileged": true
+                }
+              }
+            ],
+            "restartPolicy": "Always",
+            "terminationGracePeriodSeconds": 30,
+            "dnsPolicy": "ClusterFirst",
+            "securityContext": {}
+          }
+        }
+      },
+      "status": {
+        "latestVersion": 2,
+        "details": {
+          "causes": [
+            {
+              "type": "ConfigChange"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "node-web-service",
+    "labels": {
+      "app": "node-web2"
+    }
+  },
+  "spec": {
+    "selector": {
+      "app": "node-web2"
+    },
+    "ports": [
+      {
+        "protocol": "TCP",
+        "port": 8080,
+        "targetPort": 8080
+      }
+    ]
+  }
+}

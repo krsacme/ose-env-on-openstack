@@ -1,0 +1,21 @@
+---
+- name: "AWS Delete"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Gather EC2 instances list"
+      ec2_remote_facts:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ aws_region }}"
+      register: ose_ec2s
+
+    - name: "Delete EC2 instances"
+      ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ aws_region }}"
+        state: absent
+        instance_ids: "{{ item.id }}"
+      with_items: "{{ ose_ec2s.instances }}"

@@ -1,0 +1,71 @@
+- name: "VPC Facts to verify"
+  ec2_vpc_net_facts:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+  register: ose_vpc
+
+- set_fact: vpc_id="{{ ose_vpc.vpcs[0].id }}"
+- set_fact: vpc_cidr="{{ ose_vpc.vpcs[0].cidr_block }}"
+
+- name: "Create Security Group"
+  ec2_group:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    vpc_id: "{{ vpc_id }}"
+    name: "{{ ose_security_group_name }}"
+    description: Security Group for Entire OSE Environment
+    region: "{{ aws_region }}"
+    rules:
+      ## All Nodes (TODO: can be restricated only to master later)
+      ### SSH Connection
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      ## Node-To-Node
+      ### SDN Communication
+      - proto: udp
+        from_port: 4789
+        to_port: 4789
+        cidr_ip: "{{ vpc_cidr }}"
+      ## Node To Master
+      ### DNS Service for the environment
+      - proto: tcp
+        from_port: 53
+        to_port: 53
+        cidr_ip: "{{ vpc_cidr }}"
+      - proto: udp
+        from_port: 53
+        to_port: 53
+        cidr_ip: "{{ vpc_cidr }}"
+      ### API Server
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: "0.0.0.0/0"
+      - proto: tcp
+        from_port: 8443
+        to_port: 8443
+        cidr_ip: "0.0.0.0/0"
+      ## Master to Master
+      ### ETCD Master
+      - proto: tcp
+        from_port: 4001
+        to_port: 4001
+        cidr_ip: "{{ vpc_cidr }}"
+      ### ETCD Slave
+      - proto: tcp
+        from_port: 7001
+        to_port: 7001
+        cidr_ip: "{{ vpc_cidr }}"
+      ### ETCD
+      - proto: tcp
+        from_port: 2379
+        to_port: 2379
+        cidr_ip: "{{ vpc_cidr }}"
+      ### ETCD Leader Election
+      - proto: tcp
+        from_port: 2380
+        to_port: 2380
+        cidr_ip: "{{ vpc_cidr }}"

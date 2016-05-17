@@ -1,0 +1,133 @@
+{
+    "kind": "DeploymentConfig",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "rails-postgresql-example",
+        "creationTimestamp": null,
+        "labels": {
+            "template": "rails-postgresql-example"
+        },
+        "annotations": {
+            "description": "Defines how to deploy the application server"
+        }
+    },
+    "spec": {
+        "strategy": {
+            "type": "Recreate",
+            "recreateParams": {
+                "pre": {
+                    "failurePolicy": "Abort",
+                    "execNewPod": {
+                        "command": [
+                            "./migrate-database.sh"
+                        ],
+                        "containerName": "rails-postgresql-example"
+                    }
+                }
+            },
+            "resources": {}
+        },
+        "triggers": [
+            {
+                "type": "ImageChange",
+                "imageChangeParams": {
+                    "automatic": true,
+                    "containerNames": [
+                        "rails-postgresql-example"
+                    ],
+                    "from": {
+                        "kind": "ImageStreamTag",
+                        "name": "rails-postgresql-example:latest"
+                    }
+                }
+            },
+            {
+                "type": "ConfigChange"
+            }
+        ],
+        "replicas": 1,
+        "selector": {
+            "name": "rails-postgresql-example"
+        },
+        "template": {
+            "metadata": {
+                "name": "rails-postgresql-example",
+                "creationTimestamp": null,
+                "labels": {
+                    "name": "rails-postgresql-example"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "rails-postgresql-example",
+                        "image": "172.30.49.154:5000/test/rails-postgresql-example@sha256:927b42c7ccd3f1c8872b8f5fbe125a129a80422b6699c2284c62794fc596ce46",
+                        "ports": [
+                            {
+                                "containerPort": 8080,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "env": [
+                            {
+                                "name": "DATABASE_SERVICE_NAME",
+                                "value": "postgresql"
+                            },
+                            {
+                                "name": "POSTGRESQL_USER",
+                                "value": "userWPR"
+                            },
+                            {
+                                "name": "POSTGRESQL_PASSWORD",
+                                "value": "DFbQboIK"
+                            },
+                            {
+                                "name": "POSTGRESQL_DATABASE",
+                                "value": "root"
+                            },
+                            {
+                                "name": "SECRET_KEY_BASE",
+                                "value": "7kebucs2lbsw4y4behtb5vabjvid2vvivkhn020wdng6iafktihnlyg2hyakn0h44e1wf780qo6ha66aci58uq4wj0ehyi614k3yfq5agl8t6hcnoifyhxo4ad5ryfi"
+                            },
+                            {
+                                "name": "POSTGRESQL_MAX_CONNECTIONS",
+                                "value": "100"
+                            },
+                            {
+                                "name": "POSTGRESQL_SHARED_BUFFERS",
+                                "value": "12MB"
+                            },
+                            {
+                                "name": "SECRET_KEY_BASE",
+                                "value": "7kebucs2lbsw4y4behtb5vabjvid2vvivkhn020wdng6iafktihnlyg2hyakn0h44e1wf780qo6ha66aci58uq4wj0ehyi614k3yfq5agl8t6hcnoifyhxo4ad5ryfi"
+                            },
+                            {
+                                "name": "APPLICATION_DOMAIN"
+                            },
+                            {
+                                "name": "APPLICATION_USER",
+                                "value": "openshift"
+                            },
+                            {
+                                "name": "APPLICATION_PASSWORD",
+                                "value": "secret"
+                            },
+                            {
+                                "name": "RAILS_ENV",
+                                "value": "production"
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "imagePullPolicy": "IfNotPresent"
+                    }
+                ],
+                "restartPolicy": "Always",
+                "terminationGracePeriodSeconds": 30,
+                "dnsPolicy": "ClusterFirst",
+                "securityContext": {}
+            }
+        }
+    },
+    "status": {}
+}

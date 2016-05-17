@@ -1,0 +1,32 @@
+---
+- name: "master specific setups - keys and cfg"
+  hosts: masters
+  user: cloud-user
+  gather_facts: false
+  tasks:
+    - name: "remove the id_rsa file"
+      file: path="/home/cloud-user/.ssh/id_rsa" state=absent
+
+    - name: "remove the id_rsa.pub file"
+      file: path=/home/cloud-user/.ssh/id_rsa.pub state=absent
+
+    - name: "generate ssh key in first master"
+      shell: echo -e  'y\n'| ssh-keygen -f /home/cloud-user/.ssh/id_rsa -t rsa -N ''
+
+    - name: "get the public key"
+      shell: cat /home/cloud-user/.ssh/id_rsa.pub
+      register: pub_key_reg
+
+    - name: "set fact on the host"
+      set_fact: pub_key="{{ pub_key_reg.stdout }}"
+
+- name: "authorize master1 key to all nodes"
+  hosts: masters:nodes:lb:etcd
+  user: cloud-user
+  gather_facts: false
+  pre_tasks:
+    - name: "first master's host name"
+      set_fact: host_name="{{ ose_master_name }}1.{{ ose_cluster_domain }}"
+
+    - name: "update the keys to all nodes"
+      authorized_key: user=cloud-user key="{{ hostvars[host_name]['pub_key'] }}"

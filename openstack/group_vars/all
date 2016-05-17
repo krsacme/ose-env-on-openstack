@@ -1,0 +1,31 @@
+
+named_cloud: os1
+
+ose_master_count: 1
+ose_node_count: 2
+ose_lb_count: 0
+ose_etcd_count: 0
+etcd_in_master: true
+
+node_start_name: "skramaja-ose3"
+ose_cluster_domain: "cloud3.com"
+
+#node_start_name: "skramaja-atm"
+#ose_cluster_domain: "cloud2.com"
+
+ose_master_name: "master"
+ose_node_name: "node"
+ose_etcd_name: "etcd"
+ose_lb_name: "lb"
+ose_dns_name: "dns"
+
+dns_image_name: "_OS1_rhel-guest-image-7.2-20151102.0.x86_64.qcow2"
+image_name: "_OS1_rhel-guest-image-7.2-20151102.0.x86_64.qcow2"
+#image_name: "_OS1_rhel-atomic-host-7.qcow2"
+user_name: "cloud-user"
+key_name: "skramaja-laptop3"
+flavor_name: "m3.large"
+security_groups: "all_open"
+
+ansible_ssh_user: cloud-user
+ansible_sudo: true

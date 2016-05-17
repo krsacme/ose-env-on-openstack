@@ -1,0 +1,27 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+
+{% if 'nodes' in groups %}
+{% for host in groups['nodes'] %}
+{{ hostvars[host]['fixed_ip'] }} {{ hostvars[host]['inventory_hostname'] }}
+{% endfor %}
+{% endif %}
+
+{% if 'masters' in groups %}
+{% for host in groups['masters'] %}
+{{ hostvars[host]['fixed_ip'] }} {{ hostvars[host]['inventory_hostname'] }}
+{% endfor %}
+{% endif %}
+
+{% if 'lb' in groups %}
+{% for host in groups['lb'] %}
+{{ hostvars[host]['floating_ip'] }} {{ hostvars[host]['inventory_hostname'] }}
+{% endfor %}
+{% endif %}
+
+{% if 'etcd' in groups %}
+{% for host in groups['etcd'] %}
+{{ hostvars[host]['fixed_ip'] }} {{ hostvars[host]['inventory_hostname'] }}
+{% endfor %}
+{% endif %}

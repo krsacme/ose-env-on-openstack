@@ -1,0 +1,28 @@
+---
+- name: "Create Security Group"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+    - aws/config.yml
+  tasks:
+    - name: "Create VPC Network"
+      ec2_vpc:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        state: present
+        region: "{{ aws_region }}"
+        cidr_block: 10.0.0.0/16
+        resource_tags: {"Environment": "OSE"}
+
+    - name: "VPC Facts to verify"
+      ec2_vpc_net_facts:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ aws_region }}"
+        filters:
+          "tag:Environment": OSE
+      register: ose_vpc
+
+    - name: "Print VPC Facts"
+      debug: var=ose_vpc

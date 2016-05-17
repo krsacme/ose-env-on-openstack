@@ -1,0 +1,102 @@
+- set_fact: host_file_path="{{ playbook_dir }}/hosts"
+
+- name: "create hosts file"
+  template: src=hosts.j2 dest="{{ host_file_path }}"
+
+- name: "master - get subnet id of VPC"
+  ec2_vpc_subnet_facts:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+  register: ose_vpc_subnet
+
+- set_fact: vpc_subnet_id="{{ item.id }}"
+  when: item.availability_zone == "us-west-2b"
+  with_items: "{{ ose_vpc_subnet.subnets }}"
+
+- name: "master - create master instances"
+  ec2:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    key_name: "{{ aws_key_name }}"
+    image: "{{ aws_image_id }}"
+    instance_type: "{{ aws_master_instance_type }}"
+    wait: yes
+    group: "{{ ose_security_group_name}}"
+    vpc_subnet_id: "{{ vpc_subnet_id }}"
+    assign_public_ip: yes
+    exact_count: "{{ aws_master_count }}"
+    region: "{{ aws_region }}"
+    instance_tags:
+      ose_type: master
+      ose_master: yes
+    count_tag: ose_master
+
+- name: "master - gather EC2 instances list"
+  ec2_remote_facts:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    filters:
+      instance-state-name: running
+      "tag:ose_type": master
+  register: ose_ec2_masters
+
+- name: "master - set name for all the master instances"
+  ec2_tag:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    resource: "{{ item.1.id }}"
+    tags:
+      Name: master{{ item.0 }}.{{ ose_cluster_domain }}
+  with_indexed_items: "{{ ose_ec2_masters.instances }}"
+  when: aws_master_count > 1
+
+- name: "master - set name for the single master instance"
+  ec2_tag:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    resource: "{{ item.id }}"
+    tags:
+      Name: master.{{ ose_cluster_domain }}
+  with_items: "{{ ose_ec2_masters.instances }}"
+  when: aws_master_count == 1
+
+- name: "master - gather EC2 instances list"
+  ec2_remote_facts:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    filters:
+      instance-state-name: running
+      "tag:ose_type": master
+  register: ose_ec2_masters
+
+- name: "master - wait for SSH to come up"
+  wait_for: host="{{ item.public_dns_name }}" port=22 timeout=320 state=started
+  with_items: "{{ ose_ec2_masters.instances }}"
+
+- name: "master - adding master host to dynamcic host list"
+  add_host:
+    hostname: "{{ item.tags.Name }}"
+    groups: "masters"
+    ansible_user: "{{ user_name }}"
+    ansible_host: "{{ lookup('dig', item.public_dns_name) }}"
+    public_host_name: "{{ item.public_dns_name }}"
+    fixed_ip: "{{ item.private_ip_address }}"
+    floating_ip: "{{ lookup('dig', item.public_dns_name) }}"
+  with_items: "{{ ose_ec2_masters.instances }}"
+
+- set_fact: l_is_atomic_host=false
+
+- name: "add master entry to hosts file for [masters] section"
+  lineinfile: dest="{{ host_file_path }}" state=present insertafter=^\[masters\]
+    line="{{ item.tags.Name }} openshift_hostname={{ item.tags.Name }} openshift_public_hostname={{ item.tags.Name }} openshift_public_ip={{ lookup('dig', item.public_dns_name) }}"
+  with_items: "{{ ose_ec2_masters.instances }}"
+
+- name: "add master entry to hosts file for [nodes] or [lb] section"
+  lineinfile: dest="{{ host_file_path }}" state=present insertafter=^\[nodes\]
+    line="{{ item.tags.Name }} openshift_hostname={{ item.tags.Name }} openshift_public_hostname={{ item.tags.Name }} openshift_public_ip={{ lookup('dig', item.public_dns_name) }}"
+  with_items: "{{ ose_ec2_masters.instances }}"

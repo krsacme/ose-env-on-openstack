@@ -1,0 +1,16 @@
+---
+- name: "Delete VPC created for OSE Environment"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  vars_files:
+    - aws/config.yml
+  tasks:
+    - name: "Delete VPC create for OSE Environement"
+      ec2_vpc:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        state: absent
+        region: "{{ aws_region }}"
+        cidr_block: 10.0.0.0/16
+        resource_tags: {"Environment": "OSE"}

@@ -1,0 +1,51 @@
+---
+- name: "setup localhost for continuing OpenShift installation"
+  hosts: localhost
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: "remove if any old masters in the hosts file"
+      lineinfile: dest="/etc/hosts" regexp=".*{{ hostvars[item]['inventory_hostname'] }}.*" state=absent
+      with_items:
+        - "{{ groups.masters }}"
+
+    - name: "remove if any old nodes in the hosts file"
+      lineinfile: dest="/etc/hosts" regexp=".*{{ hostvars[item]['inventory_hostname'] }}.*" state=absent
+      when: groups.nodes is defined
+      with_items:
+        - "{{ groups.nodes }}"
+
+    - name: "remove if any old lab in the hosts file"
+      lineinfile: dest="/etc/hosts" regexp=".*{{ hostvars[item]['inventory_hostname'] }}.*" state=absent
+      when: groups.lab is defined
+      with_items:
+        - "{{ groups.lab }}"
+
+    - name: "remove if any old lab in the hosts file"
+      lineinfile: dest="/etc/hosts" regexp=".*{{ hostvars[item]['inventory_hostname'] }}.*" state=absent
+      when: groups.lb is defined
+      with_items:
+        - "{{ groups.lb }}"
+
+    - name: "add masters to hosts file"
+      lineinfile: dest="/etc/hosts" line="{{ hostvars[item]['floating_ip'] }} {{ hostvars[item]['inventory_hostname'] }}"
+      with_items:
+        - "{{ groups.masters }}"
+
+    - name: "add nodes to hosts file"
+      lineinfile: dest="/etc/hosts" line="{{ hostvars[item]['floating_ip'] }} {{ hostvars[item]['inventory_hostname'] }}"
+      when: groups.nodes is defined
+      with_items:
+        - "{{ groups.nodes }}"
+
+    - name: "add lab to hosts file"
+      lineinfile: dest="/etc/hosts" line="{{ hostvars[item]['floating_ip'] }} {{ hostvars[item]['inventory_hostname'] }}"
+      when: groups.labs is defined
+      with_items:
+        - "{{ groups.labs }}"
+
+    - name: "add lb to hosts file"
+      lineinfile: dest="/etc/hosts" line="{{ hostvars[item]['floating_ip'] }} {{ hostvars[item]['inventory_hostname'] }}"
+      when: groups.lb is defined
+      with_items:
+        - "{{ groups.lb }}"

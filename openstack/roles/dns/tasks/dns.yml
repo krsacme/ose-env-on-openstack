@@ -1,0 +1,28 @@
+---
+- name: enable redhat subscription
+  redhat_subscription: state=present username={{ rhel_subs_user }} password={{ rhel_subs_pass }} autosubscribe=true pool={{ rhel_subs_pool_int }}
+
+- name: update subscription pool and repos required for openshift
+  command: "{{ item }}"
+  with_items:
+    - subscription-manager remove --all
+    - subscription-manager attach --pool={{ rhel_subs_pool_int }}
+    - subscription-manager repos --disable="*"
+    - subscription-manager repos
+        --enable="rhel-7-server-rpms"
+        --enable="rhel-7-server-extras-rpms"
+
+- name: "setup dnsmasq service"
+  yum: name=dnsmasq state=latest
+
+- name: "copy the resolv.conf for dnsmasq usage"
+  copy: src=/etc/resolv.conf dest=/etc/resolv.conf.upstream
+
+- name: "creating dnsmasq configuration file"
+  template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
+
+- name: "add hosts to /etc/hosts file"
+  template: src=hosts.j2 dest=/etc/hosts
+
+- name: "restart and enable dnsmasq service"
+  service: name=dnsmasq state=restarted enabled=yes

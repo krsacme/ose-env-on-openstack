@@ -1,0 +1,5 @@
+
+ansible masters:nodes:lb -m command -b -a "yum downgrade -y docker docker-selinux "
+ansible masters:nodes:lb -m yum -b -a "state=absent name=docker-forward-journald "
+ansible masters:nodes:lb -m command -b -a "sudo yum update --exclude='docker-1.9* docker-selinux-1.9*'"
+ansible masters:nodes:lb -b -m lineinfile -a "dest=/etc/yum.conf line='exclude=docker-1.9* docker-selinux-1.9*' insertafter='[main]' "

@@ -1,0 +1,28 @@
+---
+- name: "AWS Setup"
+  hosts: localhost
+  gather_facts: false
+  vars:
+    create: false
+  roles:
+    - aws_launch
+
+- include: includes/post_local_config.yml
+
+- hosts: masters
+  user: ec2-user
+  tasks:
+    - debug: var=inventory_hostname
+
+- name: "Update DNS Server"
+  hosts: labs
+  user: ec2-user
+  gather_facts: false
+  become: yes
+  tasks:
+  - name: "update the master server ip address if changed"
+    lineinfile: dest=/etc/dnsmasq.conf regexp='^address=.*' line='address=/.cloudapps.example.com/{{ hostvars[item]['floating_ip'] }}'
+    with_items:
+      - "{{ groups.nodes }}"
+  - service: name=dnsmasq state=restarted
+
