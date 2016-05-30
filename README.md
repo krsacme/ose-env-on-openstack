@@ -1,4 +1,4 @@
-#OpenShift Enterprise Environment in OpenStack Platform
+#OpenShift Enterprise Environment in Cloud Platform (OpenStack & AWS)
 
 ** work in progress **
 
